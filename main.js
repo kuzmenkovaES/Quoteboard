@@ -2,17 +2,17 @@
 
 agGrid.initialiseAgGridWithAngular1(angular);
 
-var module = angular.module("quoteboardGrid", ["agGrid"]);
+var module = angular.module('quoteboardGrid', ['agGrid']);
 
-module.controller("quoteboardGridCtrl", [ '$scope', '$interval', 'mainFactory', function($scope, $interval, mainFactory){
+module.controller('quoteboardGridCtrl', [ '$scope', '$interval', 'mainFactory', function($scope, $interval, mainFactory){
     $scope.symbolName = '';
 
     var columnDefs = [
-        {headerName: "Symbol", field: "symbol"},
-        {headerName: "Last", field: "last"},
-        {headerName: "Change", field: "change"},
-        {headerName: "High", field: "high"},
-        {headerName: "Low", field: "low"}
+        {headerName: 'Symbol', field: 'symbol'},
+        {headerName: 'Last', field: 'last'},
+        {headerName: 'Change', field: 'change'},
+        {headerName: 'High', field: 'high'},
+        {headerName: 'Low', field: 'low'}
     ];
 
     $scope.gridOptions = {
@@ -21,7 +21,8 @@ module.controller("quoteboardGridCtrl", [ '$scope', '$interval', 'mainFactory', 
         angularCompileRows: true,
         enableFilter: true,
         enableSorting: true,
-        rowHeight: 35
+        rowHeight: 35,
+        onGridReady: function(params) {params.api.sizeColumnsToFit();}
     };
   
     var rowData = mainFactory.get();
@@ -49,7 +50,7 @@ module.service('mainFactory', function() {
         var newPrice = generateRandomNumber(minPrice, maxPrice);
         var row = {
             symbol: symbolName ? symbolName :  Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5),
-              last: newPrice, 
+              last: newPrice < 1 ? 0 : newPrice, 
             change: newPrice, 
               high: newPrice, 
                low: newPrice
@@ -59,23 +60,17 @@ module.service('mainFactory', function() {
 
     function changeData(row) {
         var price = generateRandomNumber(minPrice, maxPrice);
-
-        if(price < row.low){
-            row.low = price;
-        }
-
-        if(price > row.high){
-            row.high = price;
-        }
-
-        row.change = (row.last - price).toFixed(2);
-        row.last = price;
-
-        return row;
+        var newRow = {
+               low: price < row.low ? price : row.low,
+              high: price > row.high ? price : row.high,
+            change: (row.last - price).toFixed(2),
+              last: price < 1 ? 0 : price
+        };
+        return Object.assign(row, newRow);
     }
 
     function generateRandomNumber(min, max){
-        return +( Math.random()* ( min - max + 0.87)).toFixed(2);
+        return +( Math.random()* ( max - min + 0.87)).toFixed(2);
     }    
     
     function addRow(symbolName){
