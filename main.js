@@ -1,8 +1,26 @@
+'use strict'
+
 agGrid.initialiseAgGridWithAngular1(angular);
 
-var module = angular.module("example", ["agGrid"]);
+var module = angular.module("quoteboardGrid", ["agGrid"]);
 
-module.controller("exampleCtrl", function($scope, $interval) {
+
+
+module.controller("quoteboardGridCtrl", [ '$scope', 'mainFactory', function($scope, mainFactory){
+  $scope.symbolName = '';
+  
+  $scope.gridOptions = mainFactory.get();
+
+  $scope.addNewRow = function(symbolName){
+    mainFactory.addRow(symbolName); 
+  };
+
+}]);
+
+module.service('mainFactory', [ '$interval' , function($interval) {
+    var minPrice = 100,
+        maxPrice = 10000,
+        rowData = [];
 
     var columnDefs = [
         {headerName: "Symbol", field: "symbol"},
@@ -12,14 +30,7 @@ module.controller("exampleCtrl", function($scope, $interval) {
         {headerName: "Low", field: "low"}
     ];
 
-    var rowData = [
-        {symbol: "AAPL", last: "173.00", change: "-1.26", high: 999, low: 66},
-        {symbol: "ESH8", last: "2720.50", change: "-2.75", high: 999, low: 66},
-        {symbol: "NQH8", last: "6897.50", change: "-20.57", high: 999, low: 66},
-        {symbol: "CLK8", last: "54.01", change: "+1.13", high: 999, low: 66}
-    ];
-
-    $scope.gridOptions = {
+    var gridOptions = {
         columnDefs: columnDefs,
         rowData: rowData,
         angularCompileRows: true,
@@ -27,41 +38,64 @@ module.controller("exampleCtrl", function($scope, $interval) {
         enableSorting: true,
         rowHeight: 35
     };
-    $scope.symbolName = '';
-    $scope.addNewRow = function(symbolName){
-        rowData.push(generateDAtaForNewRow({symbol: symbolName, last: 1, change: "1", high: 1, low: 1}) );
-        $scope.gridOptions.api.setRowData(rowData);
+
+    for (var i = 0; i < 4; i++) {
+        addRow();
+    }
+    
+
+    function generateDataForNewRow(symbolName){
+        var newPrice = generateRandomNumber(minPrice, maxPrice);
+
+        return {
+            symbol: symbolName ? symbolName : Math.random().toString(36).substring(7),
+              last: newPrice, 
+            change: newPrice, 
+              high: newPrice, 
+               low: newPrice
+        };
+    }
+
+    function changeData(row) {
+        var price = generateRandomNumber(minPrice, maxPrice);
+
+        if(price < row.low){
+            row.low = price;
+        }
+
+        if(price > row.high){
+            row.high = price;
+        }
+
+
+        row.change = (row.last - price).toFixed(2);
+        row.last = price;
+
+        return row;
+
+
+    }
+
+    function generateRandomNumber(min, max){
+        return +( Math.random()* ( min - max + 1) + max ).toFixed(2);
+    }    
+    
+    function addRow(symbolName){
+        rowData.push(generateDataForNewRow(symbolName));
     }
 
     $interval(function() {
-        let countUpdatesRow = Math.floor(Math.random() * rowData.length);
-        changeDate(rowData[countUpdatesRow]);
-        $scope.gridOptions.api.setRowData(rowData);
+        var countUpdatesRow = Math.floor(Math.random() * rowData.length);
+        changeData(rowData[countUpdatesRow]);
+        gridOptions.api.setRowData(rowData);
     }, 1000);
 
-    function generateRandomNumber(oldValue){
-        let number =  (Math.random()*(oldValue*rowData.length + 1)).toFixed(2);
-        return number;
-    }
-    function generateDAtaForNewRow(row){
-        row.last = generateRandomNumber(row.last);
-        row.change = generateRandomNumber(row.change);
-        row.high = generateRandomNumber(row.high);
-        row.low = generateRandomNumber(row.low);
-        return row;
-    }
-    function changeDate(row) {
-        // console.log(row);
-        console.clear();
-        row.change = generateRandomNumber(row.change);
+    this.get = function () {
+        return gridOptions;
+    };
 
-        let oldLast = row.last*1;
-        let newChange = row.change*1;
-        row.last = (oldLast + newChange).toFixed(2);
+    this.addRow = function (symbol) {
+        addRow(symbol);
+    };
 
-        return row;
-
-
-    }
-
-});
+}]);

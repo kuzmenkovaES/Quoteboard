@@ -11,13 +11,13 @@
 		<script src="https://unpkg.com/ag-grid@18.1.1/dist/ag-grid.min.js"></script>
 	</head>
 	<body>
-		<div ng-app="example" ng-controller="exampleCtrl" style="height: 100%">
+		<div ng-app="quoteboardGrid" ng-controller="quoteboardGridCtrl" style="height: 100%">
 			<div class="container">
 				<h2>My Quoteboard</h2>
 				<form class="form-inline">
 					<div class="form-group">
 					  <input type="text" class="form-control col-sm-4" placeholder="Symbol Name" ng-model="symbolName">
-					  <button type="button" ng-click="addNewRow(symbolName)" style="margin-left: 10px; " class="btn btn-success">Add Symbuol</button>
+					  <button type="button" ng-click="addNewRow(symbolName)" style="margin-left: 10px;" class="btn btn-success">Add Symbol</button>
 					</div>
 				</form>
 			    <div ag-grid="gridOptions" class="ag-theme-balham" style="min-height: 300px; height: 70vh; margin-top: 20px;"></div>
